@@ -7,4 +7,5 @@
 .App{
   height: 100vh;
   background-color: rgb(230, 225, 225);
+  overflow-y:auto;
 }
