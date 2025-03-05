@@ -1,0 +1,11 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.App{
+  height: 100vh;
+  background-color: rgb(230, 225, 225);
+  overflow-y:auto;
+}
