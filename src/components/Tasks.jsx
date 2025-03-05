@@ -1,18 +1,35 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import './Tasks.css'
 import add_icon from '../assets/add_icon.png'
 import arrow_down from '../assets/arrow_down.png'
 
+// obtain data from localstorage
+const getLocalStorage = (key) => {
+  const data = localStorage.getItem(key);
+  return data ? JSON.parse(data) : [];
+}
+
 const Tasks = () => {
 
-  const [tasks, setTasks] = useState([]);
+  const [tasks, setTasks] = useState(() => getLocalStorage('tasks'));
   const [input, setInput] = useState('');
-  const [completedTasks, setCompletedTasks] = useState([]);
+  const [completedTasks, setCompletedTasks] = useState(() => getLocalStorage('completedTasks'));
+
+
+  // save tasks to localStorage
+  useEffect(() => {
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+  }, [tasks])
+
+  // save completed tasks to localstorage
+  useEffect(() => {
+    localStorage.setItem('completedTasks', JSON.stringify(completedTasks));
+  }, [completedTasks])
 
   // add the task to list
   const addTaskToList = () => {
     if (input.trim() !== '') {
-      setTasks([...tasks,
+      setTasks(prevTasks => [...prevTasks,
       {
         text: input,
         isChecked: false
@@ -27,15 +44,16 @@ const Tasks = () => {
   const handleKeyDown = (e) => {
     if (e.key === 'Enter') {
       addTaskToList();
+
     }
   }
 
   // delete the task
-  const deleteTask = (index,fromCompleted=false) => {
-    const tasksList = fromCompleted? completedTasks:tasks;
-    const setTaskList = fromCompleted ? setCompletedTasks:setTasks;
+  const deleteTask = (index, fromCompleted = false) => {
+    const tasksList = fromCompleted ? completedTasks : tasks;
+    const setTaskList = fromCompleted ? setCompletedTasks : setTasks;
 
-    setTaskList(prevTasks=>prevTasks.filter((_,i)=>i !== index));
+    setTaskList(prevTasks => prevTasks.filter((_, i) => i !== index));
   }
 
   // add tasks to completed list
@@ -49,18 +67,18 @@ const Tasks = () => {
   const undoCompleted = (index) => {
     const task = completedTasks[index];
     setTasks([...tasks,
-      {...task,isChecked:false}
+    { ...task, isChecked: false }
     ]);
     deleteTask(index, true);
   }
 
-  const handleCheckBoxChange = (e, index,fromCompleted=false) => {
-    if(e.target.checked){
-      fromCompleted? undoCompleted(index) : completeTask(index);
-    } else if(fromCompleted){
+  const handleCheckBoxChange = (e, index, fromCompleted = false) => {
+    if (e.target.checked) {
+      fromCompleted ? undoCompleted(index) : completeTask(index);
+    } else if (fromCompleted) {
       undoCompleted(index);
     }
-  } 
+  }
 
   return (
     <div className="tasks">
@@ -72,14 +90,14 @@ const Tasks = () => {
         {tasks.map((item, index) => (
           <div className="item" key={index}>
             <div className="left">
-              <input type="checkbox" checked={item.isChecked} onChange={(e) => handleCheckBoxChange(e,index)} />
+              <input type="checkbox" checked={item.isChecked} onChange={(e) => handleCheckBoxChange(e, index)} />
               {item.text}
             </div>
             <span className="delete" onClick={() => deleteTask(index)}>Delete</span>
           </div>
         ))}
       </div>
-      {completedTasks.length > 0 &&<div className="completed">
+      {completedTasks.length > 0 && <div className="completed">
         <div className="completed-title">
           <img src={arrow_down} alt="arrow down" />
           <h3>Completed</h3>
@@ -88,12 +106,12 @@ const Tasks = () => {
         <div className="completed-list">
           {completedTasks.map((item, index) => (
             <div className="item" key={index}>
-            <div className="left">
-              <input type="checkbox" checked={item.isChecked} onChange={(e)=>handleCheckBoxChange(e,index,true)}/>
-              {item.text}
+              <div className="left">
+                <input type="checkbox" checked={item.isChecked} onChange={(e) => handleCheckBoxChange(e, index, true)} />
+                {item.text}
+              </div>
+              <span className="delete" onClick={(e) => deleteTask(index, true)}>Delete</span>
             </div>
-            <span className="delete" onClick={(e)=>deleteTask(index,true)}>Delete</span>
-          </div>
           ))}
         </div>
       </div>}
